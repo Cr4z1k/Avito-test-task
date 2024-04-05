@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/Cr4z1k/Avito-test-task/internal/core"
 	"github.com/Cr4z1k/Avito-test-task/internal/repository"
+	"github.com/Cr4z1k/Avito-test-task/pkg/auth"
 )
 
 type Banner interface {
@@ -13,10 +14,19 @@ type Banner interface {
 	DeleteBanner(bannerID int) error
 }
 
-type Service struct {
-	Banner
+type Auth interface {
+	ParseToken(token, claim string) (interface{}, error)
+	GetToken(isAdmin bool) (string, error)
 }
 
-func NewService(r *repository.Repository) *Service {
-	return &Service{Banner: NewBannerService(r.Banner)}
+type Service struct {
+	Banner
+	Auth
+}
+
+func NewService(r *repository.Repository, t auth.TokenManager) *Service {
+	return &Service{
+		Banner: NewBannerService(r.Banner),
+		Auth:   NewAuthService(t),
+	}
 }

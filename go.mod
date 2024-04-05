@@ -1,11 +1,12 @@
 module github.com/Cr4z1k/Avito-test-task
 
-//go 1.21.2
-go 1.23
+go 1.21.2
+
+//go 1.23
 
 require github.com/gin-gonic/gin v1.9.1
 
-require github.com/lib/pq v1.10.9 // indirect
+require github.com/lib/pq v1.10.9
 
 require (
 	github.com/bytedance/sonic v1.9.1 // indirect

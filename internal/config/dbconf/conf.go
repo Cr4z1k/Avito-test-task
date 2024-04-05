@@ -28,7 +28,7 @@ func GetConnectionString() string {
 	}
 
 	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
-		config.User, os.Getenv("dbPassword"), config.Dbname, config.Host, config.Port)
+		config.User, os.Getenv("DB_PASS"), config.Dbname, config.Host, config.Port)
 
 	return connectionString
 }

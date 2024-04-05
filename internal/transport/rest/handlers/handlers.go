@@ -16,23 +16,22 @@ func NewHandler(s *service.Service) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	r := gin.New()
 
-	mwAdm := r.Group("", h.identifyAdmin)
-	{
-		banner := mwAdm.Group("/banner")
-		{
-			banner.GET("", h.GetBannerWithFilter)
-			banner.POST("", h.CreateBanner)
-			banner.PATCH("/{id}", h.UpdateBanner)
-			banner.DELETE("/{id}", h.DeleteBanner)
-		}
-	}
+	r.GET("/get_token/:isAdmin", h.GetToken)
 
-	mwUsr := r.Group("", h.identifyUser)
+	mwToken := r.Group("", h.checkToken)
 	{
-		banner := mwUsr.Group("/user_banner")
+		mwAdm := mwToken.Group("", h.identifyAdmin)
 		{
-			banner.GET("", h.GetBanner)
+			banner := mwAdm.Group("/banner")
+			{
+				banner.GET("", h.GetBannerWithFilter)
+				banner.POST("", h.CreateBanner)
+				banner.PATCH("/:id", h.UpdateBanner)
+				banner.DELETE("/:id", h.DeleteBanner)
+			}
 		}
+
+		mwToken.GET("/user_banner", h.GetBanner)
 	}
 
 	return r

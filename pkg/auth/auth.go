@@ -13,9 +13,8 @@ const (
 )
 
 type TokenManager interface {
-	Parse(token string) (string, error)
-	NewUserToken() (string, error)
-	NewAdmToken() (string, error)
+	Parse(token, claim string) (interface{}, error)
+	NewToken(isAdmin bool) (string, error)
 }
 
 type Manager struct {
@@ -30,7 +29,7 @@ func NewTokenManager(signInKey string) (*Manager, error) {
 	return &Manager{signInKey: signInKey}, nil
 }
 
-func (m *Manager) Parse(token string) (string, error) {
+func (m *Manager) Parse(token, claim string) (interface{}, error) {
 	tkn, err := jwt.Parse(token, func(tkn *jwt.Token) (i interface{}, err error) {
 		if _, ok := tkn.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected sign-in method: %v", tkn.Header["alg"])
@@ -40,17 +39,27 @@ func (m *Manager) Parse(token string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	claims, ok := tkn.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", errors.New("token claims are not of type tokenClaims")
+		return nil, errors.New("token claims are not of type tokenClaims")
 	}
 
-	return claims["sub"].(string), nil
+	value, ok := claims[claim]
+	if !ok {
+		return nil, fmt.Errorf("claim %s not found", claim)
+	}
+
+	return value, nil
 }
 
-func (m *Manager) NewUserToken() (string, error) {
-	token := 
+func (m *Manager) NewToken(isAdmin bool) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+		"exp":     jwt.NewNumericDate(time.Now().Add(ttl)),
+		"isAdmin": isAdmin,
+	})
+
+	return token.SignedString([]byte(m.signInKey))
 }
