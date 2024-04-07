@@ -1,9 +1,9 @@
 package core
 
 type BannerContent struct {
-	Title string
-	Text  string
-	Url   string
+	Title string `json:"title"`
+	Text  string `json:"text"`
+	Url   string `json:"url"`
 }
 
 type BannerWithFilters struct {
