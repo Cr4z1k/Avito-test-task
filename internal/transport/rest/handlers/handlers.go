@@ -18,7 +18,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	r.GET("/get_token/:isAdmin", h.GetToken)
 
-	mwToken := r.Group("", h.checkToken)
+	mwToken := r.Group("", h.checkTokenIsAdmin)
 	{
 		mwAdm := mwToken.Group("", h.identifyAdmin)
 		{
