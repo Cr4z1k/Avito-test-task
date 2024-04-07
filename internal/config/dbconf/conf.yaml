@@ -1,4 +1,5 @@
-host: "localhost"
-port: "5432"
-dbname: "eptachat"
-user: "postgres"
+postgres:
+  host: "localhost"
+  port: "5432"
+  dbname: "Avito-DB"
+  user: "postgres"

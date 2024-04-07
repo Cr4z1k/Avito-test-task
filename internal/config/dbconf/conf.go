@@ -8,10 +8,12 @@ import (
 )
 
 type Config struct {
-	Host   string `yaml:"host"`
-	Port   string `yaml:"port"`
-	Dbname string `yaml:"dbname"`
-	User   string `yaml:"user"`
+	Postgres struct {
+		Host   string `yaml:"host"`
+		Port   string `yaml:"port"`
+		Dbname string `yaml:"dbname"`
+		User   string `yaml:"user"`
+	} `yaml:"postgres"`
 }
 
 func GetConnectionString() string {
@@ -28,7 +30,7 @@ func GetConnectionString() string {
 	}
 
 	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
-		config.User, os.Getenv("DB_PASS"), config.Dbname, config.Host, config.Port)
+		config.Postgres.User, os.Getenv("DB_PASS"), config.Postgres.Dbname, config.Postgres.Host, config.Postgres.Port)
 
 	return connectionString
 }
