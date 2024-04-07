@@ -20,9 +20,13 @@ func main() {
 		log.Fatal("Fatal loading .env: ", err.Error())
 	}
 
-	db, err := db.GetConnection()
+	pg, err := db.GetConnection()
 	if err != nil {
 		log.Fatal("Fatal connect to DB: ", err.Error())
+	}
+
+	if err := db.CreateTablesAndTriggers(pg); err != nil {
+		log.Fatal("Fatal creating tables")
 	}
 
 	tokenManager, err := auth.NewTokenManager(os.Getenv("JWT_SALT"))
@@ -30,7 +34,7 @@ func main() {
 		log.Fatal("Fatal creating tokenManager: ", err.Error())
 	}
 
-	repo := repository.NewRepository(db)
+	repo := repository.NewRepository(pg)
 	service := service.NewService(repo, tokenManager)
 	handler := handlers.NewHandler(service)
 
