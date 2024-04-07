@@ -25,7 +25,7 @@ func main() {
 		log.Fatal("Fatal connect to DB: ", err.Error())
 	}
 
-	if err := db.CreateTablesAndTriggers(pg); err != nil {
+	if err := db.InitialQuery(pg); err != nil {
 		log.Fatal("Fatal creating tables")
 	}
 

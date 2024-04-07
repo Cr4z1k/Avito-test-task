@@ -41,10 +41,71 @@ AFTER INSERT ON banner_feature_tag
 FOR EACH ROW
 EXECUTE FUNCTION insert_banner_feature();
 
+CREATE OR REPLACE FUNCTION create_banner(
+    IN tag_ids INT[],
+    IN feature_id INT,
+    IN title VARCHAR(255),
+    IN text VARCHAR(255),
+    IN url VARCHAR(255),
+    IN is_active BOOLEAN
+)
+RETURNS INT AS $$
+DECLARE
+    banner_id INT;
+    tag_id INT;
+BEGIN
+    BEGIN
+        BEGIN
+            INSERT INTO banner(title, text, url, is_active, created_at, updated_at)
+            VALUES (title, text, url, is_active, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id INTO banner_id;
+            
+            FOREACH tag_id IN ARRAY tag_ids
+            LOOP
+                INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id)
+                VALUES (banner_id, feature_id, tag_id);
+            END LOOP;
+			
+			RETURN banner_id;
+           
+        EXCEPTION WHEN others THEN
+			RAISE EXCEPTION 'Ошибка при добавлении данных: %', SQLERRM;
+            ROLLBACK;
+        END;
+    END;
+END;
+$$ LANGUAGE plpgsql;
+
 ----------------------------------------------------------------------------------------------------------
 
 UPDATE banner SET is_active = false WHERE id = 3
-SELECT * FROM banner
+SELECT * FROM banner_feature_tag
+
+INSERT INTO banner(title, text, url, is_active, created_at, updated_at)
+VALUES ('5', '5', 'http://5.com', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id)
+VALUES (5, 2, 1), (5, 1, 2);
+
+INSERT INTO banner(title, text, url, is_active, created_at, updated_at)
+VALUES ('5', '5', 'http://5.com', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id)
+VALUES (5, 2, 1), (5, 1, 2);
+
+
+
+SELECT create_banner(
+    ARRAY[1, 2],
+    3,
+    '5',
+    '5',
+    'http://5.com',
+    true
+);
+
+DELETE FROM banner_feature_tag WHERE ID > 43;
+DELETE FROM BANNER WHERE ID > 4;
 
 INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id) VALUES (1, 2, 1), (1, 1, 2);
 INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id) VALUES (2, 2, 2), (2, 2, 3), (2, 2, 4);

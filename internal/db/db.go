@@ -15,7 +15,7 @@ func GetConnection() (*sqlx.DB, error) {
 	return db, nil
 }
 
-func CreateTablesAndTriggers(db *sqlx.DB) error {
+func InitialQuery(db *sqlx.DB) error {
 	query := `
 	CREATE TABLE IF NOT EXISTS banner(
 		ID SERIAL PRIMARY KEY NOT NULL,
@@ -67,6 +67,41 @@ func CreateTablesAndTriggers(db *sqlx.DB) error {
 	AFTER INSERT ON banner_feature_tag
 	FOR EACH ROW
 	EXECUTE FUNCTION insert_banner_feature();
+
+	CREATE OR REPLACE FUNCTION create_banner(
+		IN tag_ids INT[],
+		IN feature_id INT,
+		IN title VARCHAR(255),
+		IN text VARCHAR(255),
+		IN url VARCHAR(255),
+		IN is_active BOOLEAN
+	)
+	RETURNS INT AS $$
+	DECLARE
+		banner_id INT;
+		tag_id INT;
+	BEGIN
+		BEGIN
+			BEGIN
+				INSERT INTO banner(title, text, url, is_active, created_at, updated_at)
+				VALUES (title, text, url, is_active, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+				RETURNING id INTO banner_id;
+				
+				FOREACH tag_id IN ARRAY tag_ids
+				LOOP
+					INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id)
+					VALUES (banner_id, feature_id, tag_id);
+				END LOOP;
+				
+				RETURN banner_id;
+			   
+			EXCEPTION WHEN others THEN
+				RAISE EXCEPTION 'Ошибка при добавлении данных: %', SQLERRM;
+				ROLLBACK;
+			END;
+		END;
+	END;
+	$$ LANGUAGE plpgsql;
 	`
 	if _, err := db.Exec(query); err != nil {
 		return err
