@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/Cr4z1k/Avito-test-task/internal/core"
 	"github.com/jmoiron/sqlx"
@@ -16,20 +15,21 @@ func NewBannerRepo(db *sqlx.DB) *BannerRepo {
 	return &BannerRepo{db: db}
 }
 
-func resetBannerUpdTime(db *sqlx.DB, banner_id uint64) error {
-	query := `
-	UPDATE banner
-	SET updated_at = $2
-	WHERE id = $1;
-	`
+// TODO: use IN CU funcs
+// func resetBannerUpdTime(db *sqlx.DB, banner_id uint64) error {
+// 	query := `
+// 	UPDATE banner
+// 	SET updated_at = $2
+// 	WHERE id = $1;
+// 	`
 
-	_, err := db.Exec(query, banner_id, time.Now())
-	if err != nil {
-		return err
-	}
+// 	_, err := db.Exec(query, banner_id, time.Now())
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (r *BannerRepo) GetBannerLastRevision(tag_id, feature_id uint64, isAdmin bool) (core.Banner, error) {
 	var banner core.Banner
@@ -49,12 +49,6 @@ func (r *BannerRepo) GetBannerLastRevision(tag_id, feature_id uint64, isAdmin bo
 	if err == sql.ErrNoRows {
 		return core.Banner{}, nil
 	} else if err != nil {
-		return core.Banner{}, err
-	}
-
-	// ???
-	err = resetBannerUpdTime(r.db, banner.ID)
-	if err != nil {
 		return core.Banner{}, err
 	}
 
