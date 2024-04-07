@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) checkToken(c *gin.Context) {
+func (h *Handler) checkTokenIsAdmin(c *gin.Context) {
 	header := c.GetHeader("Authorization")
 
 	if header == "" {
@@ -26,24 +26,25 @@ func (h *Handler) checkToken(c *gin.Context) {
 		return
 	}
 
-	c.Set("tokenPart", tokenParts[1])
+	isAdmin, err := h.s.Auth.ParseToken(tokenParts[1], "isAdmin")
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Set("isAdmin", isAdmin)
 }
 
 func (h *Handler) identifyAdmin(c *gin.Context) {
-	tokenPart, ok := c.Get("tokenPart")
+	isAdmin, ok := c.Get("isAdmin")
 	if !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
-	}
-
-	isAdmin, err := h.s.Auth.ParseToken(tokenPart.(string), "isAdmin")
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 
 	isAdminBool, ok := isAdmin.(bool)
 	if !ok {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"err": ok})
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
