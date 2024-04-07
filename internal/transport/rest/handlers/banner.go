@@ -56,7 +56,34 @@ func (h *Handler) GetBannerWithFilter(c *gin.Context) {
 }
 
 func (h *Handler) CreateBanner(c *gin.Context) {
+	var jsonInfo CreateBanner
 
+	if err := c.ShouldBindJSON(&jsonInfo); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var flag bool = false
+
+	for _, tagID := range jsonInfo.TagIDs {
+		if tagID < 0 {
+			flag = true
+			break
+		}
+	}
+
+	if flag || jsonInfo.FeatureID < 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "ID cannot be less than 0"})
+		return
+	}
+
+	id, err := h.s.Banner.CreateBanner(jsonInfo.TagIDs, uint64(jsonInfo.FeatureID), jsonInfo.Content, jsonInfo.IsActive)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"banner_id": id})
 }
 
 func (h *Handler) UpdateBanner(c *gin.Context) {

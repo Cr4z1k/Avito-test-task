@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -20,11 +22,11 @@ func NewBannerService(r repository.Banner) *BannerService {
 	}
 }
 
-func (s *BannerService) GetBanner(tag_id, feature_id uint64, isLastVer, isAdmin bool) (core.BannerContent, error) {
+func (s *BannerService) GetBanner(tagID, featureID uint64, isLastVer, isAdmin bool) (core.BannerContent, error) {
 	var banner core.Banner
 	var err error
 
-	cacheKey := strconv.FormatUint(tag_id, 10) + strconv.FormatUint(feature_id, 10)
+	cacheKey := strconv.FormatUint(tagID, 10) + strconv.FormatUint(featureID, 10)
 
 	if !isLastVer {
 		banner, ok := s.cache[cacheKey]
@@ -39,7 +41,7 @@ func (s *BannerService) GetBanner(tag_id, feature_id uint64, isLastVer, isAdmin 
 		}
 	}
 
-	banner, err = s.r.GetBannerLastRevision(tag_id, feature_id, isAdmin)
+	banner, err = s.r.GetBannerLastRevision(tagID, featureID, isAdmin)
 	if err != nil {
 		return core.BannerContent{}, err
 	}
@@ -60,9 +62,19 @@ func (s *BannerService) GetBannersWithFilter(tag_id []int, feature_id, limit, of
 	return nil, nil
 }
 
-func (s *BannerService) CreateBanner(tags []int, feature int, bannerCnt core.Banner, isActive bool) error {
+func (s *BannerService) CreateBanner(tagIDs []int, featureID uint64, bannerCnt core.BannerContent, isActive bool) (int, error) {
+	linkRegex := regexp.MustCompile(`^(http[s]?:\/\/)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}([\/?#].*)?$`)
 
-	return nil
+	if !linkRegex.MatchString(bannerCnt.Url) {
+		return -1, errors.New("wrong format for URL string")
+	}
+
+	id, err := s.r.CreateBanner(tagIDs, featureID, bannerCnt, isActive)
+	if err != nil {
+		return -1, err
+	}
+
+	return id, nil
 }
 
 func (s *BannerService) UpdateBanner(bannerID int, tags []int, feature int, bannerCnt core.Banner, isActive bool) error {

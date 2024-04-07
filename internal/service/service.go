@@ -7,9 +7,9 @@ import (
 )
 
 type Banner interface {
-	GetBanner(tag_id, feature_id uint64, isLastVer, isAdmin bool) (core.BannerContent, error)
+	GetBanner(tagID, featureID uint64, isLastVer, isAdmin bool) (core.BannerContent, error)
 	GetBannersWithFilter(tag_id []int, feature_id, limit, offset int) ([]core.Banner, error)
-	CreateBanner(tags []int, feature int, bannerCnt core.Banner, isActive bool) error
+	CreateBanner(tagIDs []int, featureID uint64, bannerCnt core.BannerContent, isActive bool) (int, error)
 	UpdateBanner(bannerID int, tags []int, feature int, bannerCnt core.Banner, isActive bool) error
 	DeleteBanner(bannerID int) error
 }
