@@ -57,9 +57,13 @@ func (s *BannerService) GetBanner(tagID, featureID uint64, isLastVer, isAdmin bo
 	return bannerContent, nil
 }
 
-func (s *BannerService) GetBannersWithFilter(tag_id []int, feature_id, limit, offset int) ([]core.Banner, error) {
+func (s *BannerService) GetBannersWithFilter(tagID, featureID *int, limit, offset int) ([]core.BannerWithFilters, error) {
+	searchResult, err := s.r.GetBannersWithFilter(tagID, featureID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	return searchResult, nil
 }
 
 func (s *BannerService) CreateBanner(tagIDs []int, featureID uint64, bannerCnt core.BannerContent, isActive bool) (int, error) {

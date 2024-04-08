@@ -54,7 +54,75 @@ func (h *Handler) GetBanner(c *gin.Context) {
 }
 
 func (h *Handler) GetBannerWithFilter(c *gin.Context) {
+	var (
+		featureID *int
+		tagID     *int
+		limit     int = 100
+		offset    int = 0
+		err       error
+	)
 
+	featureIDString := c.Query("feature_id")
+
+	if featureIDString != "" {
+		featureIDconv, err := strconv.Atoi(featureIDString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if featureIDconv < 0 {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "ID cannot be less than 0"})
+			return
+		}
+
+		featureID = &featureIDconv
+	}
+
+	tagIDString := c.Query("tag_id")
+
+	if tagIDString != "" {
+		tagIDconv, err := strconv.Atoi(tagIDString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if tagIDconv < 0 {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "ID cannot be less than 0"})
+			return
+		}
+
+		tagID = &tagIDconv
+	}
+
+	limitString := c.Query("limit")
+
+	if limitString != "" {
+		limit, err = strconv.Atoi(limitString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	offsetString := c.Query("offset")
+
+	if offsetString != "" {
+		offset, err = strconv.Atoi(offsetString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	searchResult, err := h.s.Banner.GetBannersWithFilter(tagID, featureID, limit, offset)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, searchResult)
 }
 
 func (h *Handler) CreateBanner(c *gin.Context) {
