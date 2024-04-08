@@ -93,7 +93,9 @@ VALUES ('5', '5', 'http://5.com', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id)
 VALUES (5, 2, 1), (5, 1, 2);
 
-
+SELECT 'DROP FUNCTION IF EXISTS ' || proname || '(' || oidvectortypes(proargtypes) || ');'
+FROM pg_proc
+WHERE proname = 'create_banner';
 
 SELECT create_banner(
     ARRAY[1, 2],

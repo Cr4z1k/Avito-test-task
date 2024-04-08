@@ -83,6 +83,18 @@ func (s *BannerService) UpdateBanner(bannerID int, tags []int, feature int, bann
 }
 
 func (s *BannerService) DeleteBanner(bannerID int) error {
+	if bannerID < 0 {
+		return errors.New("ID cannot be less than 0")
+	}
+
+	tagID, featureID, err := s.r.DeleteBanner(uint64(bannerID))
+	if err != nil {
+		return err
+	}
+
+	key := strconv.FormatUint(tagID, 10) + strconv.FormatUint(featureID, 10)
+
+	delete(s.cache, key)
 
 	return nil
 }
