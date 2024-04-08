@@ -61,9 +61,57 @@ func (r *BannerRepo) GetBannerLastRevision(tagID, featureID uint64, isAdmin bool
 	return banner, nil
 }
 
-func (r *BannerRepo) GetBannersWithFilter(tagIDs []uint64, featureID uint64, limit, offset int) ([]core.BannerWithFilters, error) {
+func (r *BannerRepo) GetBannersWithFilter(tagID, featureID *int, limit, offset int) ([]core.BannerWithFilters, error) {
+	query := `
+		SELECT b.id, ARRAY(SELECT tag_id FROM banner_feature_tag bft WHERE banner_id = b.id) AS tag_ids, feature_id, b.title, b.text, b.url, b.is_active, b.created_at, b.updated_at
+		FROM banner_feature_tag bft
+		JOIN banner b ON b.id = bft.banner_id
+	`
 
-	return nil, nil
+	args := []interface{}{}
+
+	if tagID != nil && featureID != nil {
+		query += ` WHERE bft.tag_id = $1 AND bft.feature_id = $2 GROUP BY b.id, feature_id LIMIT $3 OFFSET $4`
+
+		args = append(args, *tagID, *featureID, limit, offset)
+	} else if tagID == nil && featureID != nil {
+		query += ` WHERE bft.feature_id = $1 GROUP BY b.id, feature_id LIMIT $2 OFFSET $3`
+
+		args = append(args, *featureID, limit, offset)
+	} else if tagID != nil && featureID == nil {
+		query += ` WHERE bft.tag_id = $1 GROUP BY b.id, feature_id LIMIT $2 OFFSET $3`
+
+		args = append(args, *tagID, limit, offset)
+	} else {
+		query += ` GROUP BY b.id, feature_id LIMIT $1 OFFSET $2`
+
+		args = append(args, limit, offset)
+	}
+
+	resultRows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	var banners []core.BannerWithFilters
+
+	for resultRows.Next() {
+		var banner core.BannerWithFilters
+
+		err := resultRows.Scan(&banner.BannerID, pq.Array(&banner.TagIDs), &banner.FeatureID,
+			&banner.Content.Title, &banner.Content.Text, &banner.Content.Url, &banner.IsActive, &banner.CreatedAt, &banner.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		banners = append(banners, banner)
+	}
+
+	if err := resultRows.Err(); err != nil {
+		return nil, err
+	}
+
+	return banners, nil
 }
 
 func (r *BannerRepo) CreateBanner(tagIDs []int, featureID uint64, bannerCnt core.BannerContent, isActive bool) (int, error) {

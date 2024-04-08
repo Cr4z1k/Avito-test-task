@@ -121,8 +121,13 @@ INSERT INTO tag VALUES (1), (2), (3), (4), (5);
 SELECT * FROM banner
 SELECT * FROM feature
 SELECT * FROM tag
-SELECT * FROM banner_tags
-SELECT * FROM banners_feature
+SELECT * FROM banner_
+SELECT * FROM banner_feature_tag
+		
+SELECT b.id, ARRAY(SELECT tag_id FROM banner_feature_tag bft WHERE banner_id = b.id) AS tag_ids, feature_id, b.title, b.text, b.url, b.is_active, b.created_at, b.updated_at
+                FROM banner_feature_tag bft
+                JOIN banner b ON b.id = bft.banner_id
+         WHERE bft.tag_id = 2 GROUP BY b.id, feature_id LIMIT $2 OFFSET $3		
 
 SELECT title, text, url
 	FROM banner b
