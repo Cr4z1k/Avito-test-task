@@ -87,7 +87,27 @@ func (r *BannerRepo) UpdateBanner(bannerID, featureID uint64, tagIDs []uint64, N
 	return nil
 }
 
-func (r *BannerRepo) DeleteBanner(bannerID uint64) error {
+func (r *BannerRepo) DeleteBanner(bannerID uint64) (uint64, uint64, error) {
+	query := `
+		SELECT tag_id, featue_id FROM banner_feature_tag WHERE banner_id = $1 LIMIT 1;
+	`
 
-	return nil
+	var featureTagIds struct {
+		tag_id     uint64
+		feature_id uint64
+	}
+
+	if err := r.db.QueryRowx(query, bannerID).StructScan(featureTagIds); err != nil {
+		return 0, 0, err
+	}
+
+	query = `
+		DELETE FROM banner WHERE id = $1;
+	`
+
+	if _, err := r.db.Exec(query, bannerID); err != nil {
+		return 0, 0, err
+	}
+
+	return featureTagIds.tag_id, featureTagIds.feature_id, nil
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/Cr4z1k/Avito-test-task/internal/core"
@@ -90,6 +91,23 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 
 }
 
+// ! NOT TESTED
 func (h *Handler) DeleteBanner(c *gin.Context) {
+	var bannerID int
 
+	if err := c.ShouldBindJSON(&bannerID); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := h.s.Banner.DeleteBanner(bannerID)
+	if err == sql.ErrNoRows {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	} else if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
