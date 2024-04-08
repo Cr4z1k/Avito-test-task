@@ -1,8 +1,8 @@
 module github.com/Cr4z1k/Avito-test-task
 
-// go 1.21.2
+go 1.21.2
 
-go 1.23
+// go 1.23
 
 require github.com/gin-gonic/gin v1.9.1
 
