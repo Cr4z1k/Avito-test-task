@@ -81,7 +81,17 @@ func (s *BannerService) CreateBanner(tagIDs []int, featureID uint64, bannerCnt c
 	return id, nil
 }
 
-func (s *BannerService) UpdateBanner(bannerID int, tags []int, feature int, bannerCnt core.Banner, isActive bool) error {
+func (s *BannerService) UpdateBanner(bannerID, featureID uint64, tagIDs []int, bannerCnt core.BannerContent, isActive bool) error {
+	newBanner := core.Banner{
+		Title:    bannerCnt.Title,
+		Text:     bannerCnt.Text,
+		Url:      bannerCnt.Url,
+		IsActive: isActive,
+	}
+
+	if err := s.r.UpdateBanner(bannerID, featureID, tagIDs, newBanner); err != nil {
+		return err
+	}
 
 	return nil
 }

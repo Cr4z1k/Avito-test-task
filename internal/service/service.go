@@ -10,7 +10,7 @@ type Banner interface {
 	GetBanner(tagID, featureID uint64, isLastVer, isAdmin bool) (core.BannerContent, error)
 	GetBannersWithFilter(tagID, featureID *int, limit, offset int) ([]core.BannerWithFilters, error)
 	CreateBanner(tagIDs []int, featureID uint64, bannerCnt core.BannerContent, isActive bool) (int, error)
-	UpdateBanner(bannerID int, tags []int, feature int, bannerCnt core.Banner, isActive bool) error
+	UpdateBanner(bannerID, featureID uint64, tagIDs []int, bannerCnt core.BannerContent, isActive bool) error
 	DeleteBanner(bannerID int) error
 }
 

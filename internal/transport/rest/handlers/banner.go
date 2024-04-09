@@ -22,26 +22,37 @@ func (h *Handler) GetBanner(c *gin.Context) {
 		return
 	}
 
-	var jsonInfo GetBanner
+	tagIDStr := c.Query("tag_id")
 
-	if err := c.ShouldBindJSON(&jsonInfo); err != nil {
+	tagID, err := strconv.ParseUint(tagIDStr, 10, 64)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if jsonInfo.UseLastRevision == nil {
-		fls := false
-		jsonInfo.UseLastRevision = &fls
-	}
+	featureIDStr := c.Query("feature_id")
 
-	if jsonInfo.TagID < 0 || jsonInfo.FeatureID < 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "ID cannot be less that 0"})
+	featureID, err := strconv.ParseUint(featureIDStr, 10, 64)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var bannerContent core.BannerContent
+	var useLastRevision bool
 
-	bannerContent, err := h.s.GetBanner(uint64(jsonInfo.TagID), uint64(jsonInfo.FeatureID), *jsonInfo.UseLastRevision, isAdminBool)
+	useLastRevisionStr := c.Query("use_last_revision")
+
+	if useLastRevisionStr == "" {
+		useLastRevision = false
+	} else {
+		useLastRevision, err = strconv.ParseBool(useLastRevisionStr)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	bannerContent, err := h.s.GetBanner(tagID, featureID, useLastRevision, isAdminBool)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -126,7 +137,7 @@ func (h *Handler) GetBannerWithFilter(c *gin.Context) {
 }
 
 func (h *Handler) CreateBanner(c *gin.Context) {
-	var jsonInfo CreateBanner
+	var jsonInfo BannerJSON
 
 	if err := c.ShouldBindJSON(&jsonInfo); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -157,7 +168,43 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 }
 
 func (h *Handler) UpdateBanner(c *gin.Context) {
+	bannerID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
+	var jsonInfo BannerJSON
+
+	if err = c.ShouldBindJSON(&jsonInfo); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var flag bool
+
+	for _, tagID := range jsonInfo.TagIDs {
+		if tagID < 0 {
+			flag = true
+			break
+		}
+	}
+
+	if flag || jsonInfo.FeatureID < 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "ID cannot be less than 0"})
+		return
+	}
+
+	err = h.s.UpdateBanner(bannerID, uint64(jsonInfo.FeatureID), jsonInfo.TagIDs, jsonInfo.Content, jsonInfo.IsActive)
+	if err == sql.ErrNoRows {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	} else if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func (h *Handler) DeleteBanner(c *gin.Context) {
