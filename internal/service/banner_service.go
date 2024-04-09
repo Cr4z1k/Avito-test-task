@@ -30,8 +30,8 @@ func (s *BannerService) GetBanner(tagID, featureID uint64, isLastVer, isAdmin bo
 
 	if !isLastVer {
 		banner, ok := s.cache[cacheKey]
-		if ok {
-			if time.Now().Add(time.Minute * 5).Before(banner.UpdatedAt) {
+		if ok && time.Now().Add(time.Minute*5).Before(banner.UpdatedAt) {
+			if banner.IsActive || isAdmin {
 				return core.BannerContent{
 					Title: banner.Title,
 					Text:  banner.Text,
