@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Cr4z1k/Avito-test-task/internal/core"
 	"github.com/gin-gonic/gin"
@@ -196,10 +197,11 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 	}
 
 	err = h.s.UpdateBanner(bannerID, uint64(jsonInfo.FeatureID), jsonInfo.TagIDs, jsonInfo.Content, jsonInfo.IsActive)
-	if err == sql.ErrNoRows {
-		c.AbortWithStatus(http.StatusNotFound)
-		return
-	} else if err != nil {
+	if err != nil {
+		if strings.Contains(err.Error(), "No banner with such ID") {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

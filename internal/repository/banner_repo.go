@@ -133,8 +133,6 @@ func (r *BannerRepo) CreateBanner(tagIDs []int, featureID uint64, bannerCnt core
 func (r *BannerRepo) UpdateBanner(bannerID, featureID uint64, tagIDs []int, newBanner core.Banner) error {
 	tagIDsArray := pq.Array(tagIDs)
 
-	// TODO: create procedure update_banner(banner_id, title, text, url, is_active, feature_id, tag_ids)
-	// TODO: that should be a transaction wich would be trying to update TABLE banner and TABLE banner_feature_tag
 	query := `
 		CALL update_banner($1, $2, $3, $4, $5, $6, $7)
 	`

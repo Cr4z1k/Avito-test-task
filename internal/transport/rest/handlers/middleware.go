@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) checkTokenIsAdmin(c *gin.Context) {
+func (h *Handler) CheckTokenIsAdmin(c *gin.Context) {
 	header := c.GetHeader("Authorization")
 
 	if header == "" {
@@ -35,7 +35,7 @@ func (h *Handler) checkTokenIsAdmin(c *gin.Context) {
 	c.Set("isAdmin", isAdmin)
 }
 
-func (h *Handler) identifyAdmin(c *gin.Context) {
+func (h *Handler) IdentifyAdmin(c *gin.Context) {
 	isAdmin, ok := c.Get("isAdmin")
 	if !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
