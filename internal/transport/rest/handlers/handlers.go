@@ -18,9 +18,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	r.GET("/get_token/:isAdmin", h.GetToken)
 
-	mwToken := r.Group("", h.checkTokenIsAdmin)
+	mwToken := r.Group("", h.CheckTokenIsAdmin)
 	{
-		mwAdm := mwToken.Group("", h.identifyAdmin)
+		mwAdm := mwToken.Group("", h.IdentifyAdmin)
 		{
 			banner := mwAdm.Group("/banner")
 			{

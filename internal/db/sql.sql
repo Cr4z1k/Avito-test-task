@@ -76,10 +76,83 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE PROCEDURE update_banner(
+    banner_id_p INT, 
+    title_p TEXT, 
+    text_p TEXT, 
+    url_p TEXT, 
+    is_active_p BOOL, 
+    feature_id_p INT, 
+    tag_ids INT[]
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    bft_ids INT[];
+    i INT;
+    bft_ids_len INT;
+    tag_ids_len INT;
+BEGIN
+    UPDATE banner 
+    SET title = title_p, text = text_p, url = url_p, is_active = is_active_p, updated_at = CURRENT_TIMESTAMP
+    WHERE id = banner_id_p;
+
+    SELECT array_agg(id) FROM banner_feature_tag WHERE banner_id = banner_id_p
+    INTO bft_ids;
+	
+	IF bft_ids IS NULL THEN
+        RAISE EXCEPTION 'No banner with such ID';
+        RETURN;
+    END IF;
+
+    bft_ids_len := array_length(bft_ids, 1);
+    tag_ids_len := array_length(tag_ids, 1);
+
+    CASE
+        WHEN bft_ids_len = tag_ids_len THEN
+            FOR i IN 1..bft_ids_len LOOP
+                UPDATE banner_feature_tag
+                SET tag_id = tag_ids[i], feature_id = feature_id_p
+                WHERE id = bft_ids[i];
+            END LOOP;
+
+        WHEN bft_ids_len > tag_ids_len THEN
+            FOR i IN 1..tag_ids_len LOOP
+                UPDATE banner_feature_tag
+                SET tag_id = tag_ids[i], feature_id = feature_id_p
+                WHERE id = bft_ids[i];
+            END LOOP;
+
+            FOR i IN tag_ids_len + 1..bft_ids_len LOOP
+                DELETE FROM banner_feature_tag
+                WHERE id = bft_ids[i];
+            END LOOP;
+
+        ELSE
+            FOR i IN 1..bft_ids_len LOOP
+                UPDATE banner_feature_tag
+                SET tag_id = tag_ids[i], feature_id = feature_id_p
+                WHERE id = bft_ids[i];
+            END LOOP;
+
+            FOR i IN bft_ids_len + 1..tag_ids_len LOOP
+                INSERT INTO banner_feature_tag (banner_id, feature_id, tag_id)
+                VALUES (banner_id_p, feature_id_p, tag_ids[i]);
+            END LOOP;
+    END CASE;
+
+    EXCEPTION WHEN others THEN
+        RAISE EXCEPTION 'Ошибка при изменении данных: %', SQLERRM;
+        ROLLBACK;
+END;
+$$;
+
 ----------------------------------------------------------------------------------------------------------
 
-UPDATE banner SET is_active = false WHERE id = 3
-SELECT * FROM banner_feature_tag
+
+
+
+
 
 INSERT INTO banner(title, text, url, is_active, created_at, updated_at)
 VALUES ('5', '5', 'http://5.com', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
@@ -121,8 +194,7 @@ INSERT INTO tag VALUES (1), (2), (3), (4), (5);
 SELECT * FROM banner
 SELECT * FROM feature
 SELECT * FROM tag
-SELECT * FROM banner_
-SELECT * FROM banner_feature_tag
+SELECT * FROM banner_feature_tag WHERE banner_id = 2
 		
 SELECT b.id, ARRAY(SELECT tag_id FROM banner_feature_tag bft WHERE banner_id = b.id) AS tag_ids, feature_id, b.title, b.text, b.url, b.is_active, b.created_at, b.updated_at
                 FROM banner_feature_tag bft
