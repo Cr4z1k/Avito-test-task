@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS banner_feature_tag (
 	CONSTRAINT unique_feature_tag UNIQUE (feature_id, tag_id)
 );
 
+DROP TRIGGER IF EXISTS trigger_insert_banner_feature ON banner_feature_tag;
+
 CREATE OR REPLACE FUNCTION insert_banner_feature()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -146,62 +148,3 @@ BEGIN
         ROLLBACK;
 END;
 $$;
-
-----------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-INSERT INTO banner(title, text, url, is_active, created_at, updated_at)
-VALUES ('5', '5', 'http://5.com', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
-INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id)
-VALUES (5, 2, 1), (5, 1, 2);
-
-INSERT INTO banner(title, text, url, is_active, created_at, updated_at)
-VALUES ('5', '5', 'http://5.com', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
-INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id)
-VALUES (5, 2, 1), (5, 1, 2);
-
-SELECT 'DROP FUNCTION IF EXISTS ' || proname || '(' || oidvectortypes(proargtypes) || ');'
-FROM pg_proc
-WHERE proname = 'create_banner';
-
-SELECT create_banner(
-    ARRAY[1, 2],
-    3,
-    '5',
-    '5',
-    'http://5.com',
-    true
-);
-
-DELETE FROM banner_feature_tag WHERE ID > 43;
-DELETE FROM BANNER WHERE ID > 4;
-
-INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id) VALUES (1, 2, 1), (1, 1, 2);
-INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id) VALUES (2, 2, 2), (2, 2, 3), (2, 2, 4);
-INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id) VALUES (3, 1, 3), (3, 1, 4), (3, 1, 5);
-INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id) VALUES (4, 3, 4), (4, 3, 5);
-
-INSERT INTO banner(title, text, url, is_active, created_at, updated_at) VALUES ('4', '4', 'http://4.com', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO feature VALUES (1), (2), (3);
-INSERT INTO tag VALUES (1), (2), (3), (4), (5);
-
-SELECT * FROM banner
-SELECT * FROM feature
-SELECT * FROM tag
-SELECT * FROM banner_feature_tag WHERE banner_id = 2
-		
-SELECT b.id, ARRAY(SELECT tag_id FROM banner_feature_tag bft WHERE banner_id = b.id) AS tag_ids, feature_id, b.title, b.text, b.url, b.is_active, b.created_at, b.updated_at
-                FROM banner_feature_tag bft
-                JOIN banner b ON b.id = bft.banner_id
-         WHERE bft.tag_id = 2 GROUP BY b.id, feature_id LIMIT $2 OFFSET $3		
-
-SELECT title, text, url
-	FROM banner b
-	JOIN banner_feature_tag bft ON b.id = bft.banner_id
-	WHERE bft.tag_id = 4 AND bft.feature_id = 1

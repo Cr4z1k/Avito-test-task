@@ -1,0 +1,5 @@
+INSERT INTO tag(id) VALUES (1), (2), (3), (4), (5)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO feature(id) VALUES (1), (2), (3)
+ON CONFLICT DO NOTHING;
