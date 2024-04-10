@@ -26,7 +26,7 @@ func main() {
 	}
 
 	if err := db.InitialQuery(pg); err != nil {
-		log.Fatal("Fatal creating tables")
+		log.Fatal("Fatal initializing DB: ", err.Error())
 	}
 
 	tokenManager, err := auth.NewTokenManager(os.Getenv("JWT_SALT"))

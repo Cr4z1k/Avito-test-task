@@ -1,5 +1,5 @@
 postgres:
-  host: "localhost"
+  host: "pg_database"
   port: "5432"
   dbname: "Avito-DB"
   user: "postgres"
