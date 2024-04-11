@@ -1,45 +1,40 @@
 CREATE TABLE IF NOT EXISTS banner(
-		ID SERIAL PRIMARY KEY NOT NULL,
-		title TEXT,
-		text TEXT,
-		url TEXT,
-		is_active BOOL,
-		created_at TIMESTAMP,
-		updated_at TIMESTAMP
-	);
-	
+	ID SERIAL PRIMARY KEY NOT NULL,
+	title TEXT,
+	text TEXT,
+	url TEXT,
+	is_active BOOL,
+	created_at TIMESTAMP,
+	updated_at TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS feature (
-    ID SERIAL PRIMARY KEY NOT NULL
+	ID SERIAL PRIMARY KEY NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tag (
-    ID SERIAL PRIMARY KEY NOT NULL
+	ID SERIAL PRIMARY KEY NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS banner_tags (
-    ID SERIAL PRIMARY KEY NOT NULL,
-    banner_id INT REFERENCES banner(ID) ON DELETE CASCADE NOT NULL,
-    tag_id INT REFERENCES tag(ID) ON DELETE CASCADE NOT NULL,
-    CONSTRAINT unique_banner_tag UNIQUE (banner_id, tag_id)
+CREATE TABLE IF NOT EXISTS banner_feature_tag (
+	ID SERIAL PRIMARY KEY NOT NULL,
+	banner_id INT REFERENCES banner(ID) ON DELETE CASCADE NOT NULL,
+	feature_id INT REFERENCES feature(ID) ON DELETE CASCADE NOT NULL,
+	tag_id INT REFERENCES tag(ID) ON DELETE CASCADE NOT NULL,
+	CONSTRAINT unique_feature_tag UNIQUE (feature_id, tag_id)
 );
 
-CREATE TABLE IF NOT EXISTS banners_feature (
-    ID SERIAL PRIMARY KEY NOT NULL,
-    banner_id INT REFERENCES banner(ID) ON DELETE CASCADE UNIQUE NOT NULL,
-    feature_id INT REFERENCES feature(ID) ON DELETE CASCADE NOT NULL,
-    CONSTRAINT unique_banner_feature UNIQUE (banner_id, feature_id)
-);
 DROP TRIGGER IF EXISTS trigger_insert_banner_feature ON banner_feature_tag;
 
 CREATE OR REPLACE FUNCTION insert_banner_feature()
 RETURNS TRIGGER AS $$
 BEGIN
     IF (SELECT COUNT(DISTINCT feature_id) FROM banner_feature_tag WHERE banner_id = NEW.banner_id) > 1
-    THEN
-        RAISE EXCEPTION 'This banner already has a feature';
-    END IF;
-    
-    RETURN NEW;
+	THEN
+		RAISE EXCEPTION 'This banner already has a feature';
+	END IF;
+	
+	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -72,11 +67,11 @@ BEGIN
                 INSERT INTO banner_feature_tag(banner_id, feature_id, tag_id)
                 VALUES (banner_id, feature_id, tag_id);
             END LOOP;
-            
-            RETURN banner_id;
-            
+			
+			RETURN banner_id;
+           
         EXCEPTION WHEN others THEN
-            RAISE EXCEPTION 'Ошибка при добавлении данных: %', SQLERRM;
+			RAISE EXCEPTION 'Ошибка при добавлении данных: %', SQLERRM;
             ROLLBACK;
         END;
     END;
@@ -106,8 +101,8 @@ BEGIN
 
     SELECT array_agg(id) FROM banner_feature_tag WHERE banner_id = banner_id_p
     INTO bft_ids;
-    
-    IF bft_ids IS NULL THEN
+	
+	IF bft_ids IS NULL THEN
         RAISE EXCEPTION 'No banner with such ID';
         RETURN;
     END IF;
