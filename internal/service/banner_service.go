@@ -12,13 +12,13 @@ import (
 
 type BannerService struct {
 	r     repository.Banner
-	cache map[string]core.Banner
+	Cache map[string]core.Banner
 }
 
 func NewBannerService(r repository.Banner) *BannerService {
 	return &BannerService{
 		r:     r,
-		cache: make(map[string]core.Banner),
+		Cache: make(map[string]core.Banner),
 	}
 }
 
@@ -29,7 +29,7 @@ func (s *BannerService) GetBanner(tagID, featureID uint64, isLastVer, isAdmin bo
 	cacheKey := strconv.FormatUint(tagID, 10) + strconv.FormatUint(featureID, 10)
 
 	if !isLastVer {
-		banner, ok := s.cache[cacheKey]
+		banner, ok := s.Cache[cacheKey]
 		if ok && time.Now().Add(time.Minute*5).Before(banner.UpdatedAt) {
 			if banner.IsActive || isAdmin {
 				return core.BannerContent{
@@ -46,7 +46,7 @@ func (s *BannerService) GetBanner(tagID, featureID uint64, isLastVer, isAdmin bo
 		return core.BannerContent{}, err
 	}
 
-	s.cache[cacheKey] = banner
+	s.Cache[cacheKey] = banner
 
 	bannerContent := core.BannerContent{
 		Title: banner.Title,
@@ -108,7 +108,7 @@ func (s *BannerService) DeleteBanner(bannerID int) error {
 
 	key := strconv.FormatUint(tagID, 10) + strconv.FormatUint(featureID, 10)
 
-	delete(s.cache, key)
+	delete(s.Cache, key)
 
 	return nil
 }
