@@ -28,7 +28,7 @@ func (h *Handler) CheckTokenIsAdmin(c *gin.Context) {
 
 	isAdmin, err := h.s.Auth.ParseToken(tokenParts[1], "isAdmin")
 	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (h *Handler) IdentifyAdmin(c *gin.Context) {
 
 	isAdminBool, ok := isAdmin.(bool)
 	if !ok {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
