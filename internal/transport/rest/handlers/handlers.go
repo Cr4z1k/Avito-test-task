@@ -18,9 +18,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	r.GET("/get_token/:isAdmin", h.GetToken)
 
-	mwToken := r.Group("", h.checkToken)
+	mwToken := r.Group("", h.CheckTokenIsAdmin)
 	{
-		mwAdm := mwToken.Group("", h.identifyAdmin)
+		mwAdm := mwToken.Group("", h.IdentifyAdmin)
 		{
 			banner := mwAdm.Group("/banner")
 			{
@@ -28,6 +28,16 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				banner.POST("", h.CreateBanner)
 				banner.PATCH("/:id", h.UpdateBanner)
 				banner.DELETE("/:id", h.DeleteBanner)
+			}
+
+			tag := mwAdm.Group("/tag")
+			{
+				tag.POST("", h.CreateTags)
+			}
+
+			feature := mwAdm.Group("/feature")
+			{
+				feature.POST("", h.CreateFeatures)
 			}
 		}
 

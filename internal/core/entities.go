@@ -1,17 +1,17 @@
 package core
 
 type BannerContent struct {
-	Title string
-	Text  string
-	Url   string
+	Title string `json:"title"`
+	Text  string `json:"text"`
+	Url   string `json:"url"`
 }
 
 type BannerWithFilters struct {
-	BannerID  uint64
-	TagIDs    []uint64
-	FeatureID uint64
-	Content   BannerContent
-	IsActive  bool
-	CreatedAt string
-	UpdatedAt string
+	BannerID  int           `json:"id"`
+	TagIDs    []int64       `json:"tag_ids"`
+	FeatureID int           `json:"feature_id"`
+	Content   BannerContent `json:"content"`
+	IsActive  bool          `json:"is_active"`
+	CreatedAt string        `json:"created_at"`
+	UpdatedAt string        `json:"updated_at"`
 }

@@ -7,10 +7,10 @@ import (
 )
 
 type Banner interface {
-	GetBanner(tag_id []int, feature_id int, isLastVer bool) (core.Banner, error)
-	GetBannersWithFilter(tag_id []int, feature_id, limit, offset int) ([]core.Banner, error)
-	CreateBanner(tags []int, feature int, bannerCnt core.Banner, isActive bool) error
-	UpdateBanner(bannerID int, tags []int, feature int, bannerCnt core.Banner, isActive bool) error
+	GetBanner(tagID, featureID uint64, isLastVer, isAdmin bool) (core.BannerContent, error)
+	GetBannersWithFilter(tagID, featureID *int, limit, offset int) ([]core.BannerWithFilters, error)
+	CreateBanner(tagIDs []int, featureID uint64, bannerCnt core.BannerContent, isActive bool) (int, error)
+	UpdateBanner(bannerID, featureID uint64, tagIDs []int, bannerCnt core.BannerContent, isActive bool) error
 	DeleteBanner(bannerID int) error
 }
 
@@ -19,14 +19,26 @@ type Auth interface {
 	GetToken(isAdmin bool) (string, error)
 }
 
+type Feature interface {
+	CreateFeatures(featureIDs []int) error
+}
+
+type Tag interface {
+	CreateTags(tagIDs []int) error
+}
+
 type Service struct {
 	Banner
 	Auth
+	Feature
+	Tag
 }
 
 func NewService(r *repository.Repository, t auth.TokenManager) *Service {
 	return &Service{
-		Banner: NewBannerService(r.Banner),
-		Auth:   NewAuthService(t),
+		Banner:  NewBannerService(r.Banner),
+		Auth:    NewAuthService(t),
+		Feature: NewFeatureService(r.Feature),
+		Tag:     NewTagService(r.Tag),
 	}
 }

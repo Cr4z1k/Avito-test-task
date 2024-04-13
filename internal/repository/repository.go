@@ -6,17 +6,31 @@ import (
 )
 
 type Banner interface {
-	GetBanner(tag_id []int, feature_id int, isLastVer bool) (core.Banner, error)
-	GetBannersWithFilter(tag_id []int, feature_id, limit, offset int) ([]core.Banner, error)
-	CreateBanner(tags []int, feature int, bannerCnt core.Banner, isActive bool) error
-	UpdateBanner(bannerID int, tags []int, feature int, bannerCnt core.Banner, isActive bool) error
-	DeleteBanner(bannerID int) error
+	GetBannerLastRevision(tagID, featureID uint64, isAdmin bool) (core.Banner, error)
+	GetBannersWithFilter(tagID, featureID *int, limit, offset int) ([]core.BannerWithFilters, error)
+	CreateBanner(tagIDs []int, featureID uint64, bannerCnt core.BannerContent, isActive bool) (int, error)
+	UpdateBanner(bannerID, featureID uint64, tagIDs []int, newBanner core.Banner) error
+	DeleteBanner(bannerID uint64) (uint64, uint64, error)
+}
+
+type Feature interface {
+	CreateFeatures(featureIDs []int) error
+}
+
+type Tag interface {
+	CreateTags(tagIDs []int) error
 }
 
 type Repository struct {
 	Banner
+	Feature
+	Tag
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
-	return &Repository{Banner: NewBannerRepo(db)}
+	return &Repository{
+		Banner:  NewBannerRepo(db),
+		Feature: NewFeatureRepo(db),
+		Tag:     NewTagRepo(db),
+	}
 }
