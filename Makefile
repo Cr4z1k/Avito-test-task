@@ -1,10 +1,14 @@
 build:
-	docker-compose build
+	sudo docker-compose build
 run-w-tests:
-	RUN_TESTS=true docker-compose up
+	sudo RUN_TESTS=true docker-compose up
+run-w-tests-bg:
+	sudo RUN_TESTS=true docker-compose up -d
 run:
-	docker-compose up
+	sudo docker-compose up
+run-bg:
+	sudo docker-compose up -d
 stop:
-	docker-compose stop
+	sudo docker-compose stop
 down:
-	docker-compose down
+	sudo docker-compose down

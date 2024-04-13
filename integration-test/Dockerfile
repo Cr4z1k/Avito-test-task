@@ -8,4 +8,4 @@ COPY --from=modules /go/pkg /go/pkg
 COPY . /app
 WORKDIR /app
 
-CMD ["sh", "-c", "if [ \"$RUN_TESTS\" = \"true\" ]; then go test -v ./integration-test/...; else echo 'Skipping tests'; fi"]
+CMD ["sh", "-c", "if [ \"$RUN_TESTS\" = \"true\" ]; then go test -v ./integration-test/... && exit 0; else echo 'Skipping tests'; fi"]

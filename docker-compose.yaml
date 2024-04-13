@@ -38,7 +38,8 @@ services:
   test:
     container_name: integration-tests
     build:
-      dockerfile: Dockerfile_tests
+      context: .
+      dockerfile: ./integration-test/Dockerfile
     environment:
       - RUN_TESTS=${RUN_TESTS}
     depends_on:
