@@ -13,10 +13,24 @@ type Banner interface {
 	DeleteBanner(bannerID uint64) (uint64, uint64, error)
 }
 
+type Feature interface {
+	CreateFeatures(featureIDs []int) error
+}
+
+type Tag interface {
+	CreateTags(tagIDs []int) error
+}
+
 type Repository struct {
 	Banner
+	Feature
+	Tag
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
-	return &Repository{Banner: NewBannerRepo(db)}
+	return &Repository{
+		Banner:  NewBannerRepo(db),
+		Feature: NewFeatureRepo(db),
+		Tag:     NewTagRepo(db),
+	}
 }

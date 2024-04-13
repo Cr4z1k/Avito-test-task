@@ -19,14 +19,26 @@ type Auth interface {
 	GetToken(isAdmin bool) (string, error)
 }
 
+type Feature interface {
+	CreateFeatures(featureIDs []int) error
+}
+
+type Tag interface {
+	CreateTags(tagIDs []int) error
+}
+
 type Service struct {
 	Banner
 	Auth
+	Feature
+	Tag
 }
 
 func NewService(r *repository.Repository, t auth.TokenManager) *Service {
 	return &Service{
-		Banner: NewBannerService(r.Banner),
-		Auth:   NewAuthService(t),
+		Banner:  NewBannerService(r.Banner),
+		Auth:    NewAuthService(t),
+		Feature: NewFeatureService(r.Feature),
+		Tag:     NewTagService(r.Tag),
 	}
 }
