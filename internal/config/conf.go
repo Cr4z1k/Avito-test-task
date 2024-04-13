@@ -1,4 +1,4 @@
-package dbconf
+package config
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ type Config struct {
 }
 
 func GetConnectionString() string {
-	configData, err := os.ReadFile("./internal/config/dbconf/conf.yaml")
+	configData, err := os.ReadFile("./internal/config/conf.yaml")
 	if err != nil {
 		panic(err)
 	}
