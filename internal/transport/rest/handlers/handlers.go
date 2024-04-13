@@ -29,6 +29,16 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				banner.PATCH("/:id", h.UpdateBanner)
 				banner.DELETE("/:id", h.DeleteBanner)
 			}
+
+			tag := mwAdm.Group("/tag")
+			{
+				tag.POST("", h.CreateTags)
+			}
+
+			feature := mwAdm.Group("/feature")
+			{
+				feature.POST("", h.CreateFeatures)
+			}
 		}
 
 		mwToken.GET("/user_banner", h.GetBanner)

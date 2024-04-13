@@ -145,6 +145,11 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 		return
 	}
 
+	if len(jsonInfo.TagIDs) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "slice has 0 elements"})
+		return
+	}
+
 	var flag bool = false
 
 	for _, tagID := range jsonInfo.TagIDs {
@@ -179,6 +184,11 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 
 	if err = c.ShouldBindJSON(&jsonInfo); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if len(jsonInfo.TagIDs) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "slice has 0 elements"})
 		return
 	}
 
