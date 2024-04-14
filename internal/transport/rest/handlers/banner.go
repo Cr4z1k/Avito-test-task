@@ -222,7 +222,7 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 func (h *Handler) DeleteBanner(c *gin.Context) {
 	bannerID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
