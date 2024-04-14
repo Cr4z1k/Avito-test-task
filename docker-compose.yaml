@@ -2,7 +2,9 @@ version: '3.9'
 services:
   backend:
     container_name: avito-backend
-    build: ./
+    build:
+      context: .
+      dockerfile: ./deploy/service/Dockerfile
     ports:
       - '8000:8080'
     environment:
@@ -16,11 +18,14 @@ services:
       - avito-network
 
   db:
-    image: postgres:latest
     container_name: pg_database
+    build:
+      context: .
+      dockerfile: ./deploy/pg/Dockerfile
     restart: always
     volumes:
       - db-data:/var/lib/postgresql/data
+      - db-data-test:/var/lib/postgresql/test
     expose:
       - 5432
     environment:
@@ -39,7 +44,7 @@ services:
     container_name: integration-tests
     build:
       context: .
-      dockerfile: ./integration-test/Dockerfile
+      dockerfile: ./deploy/tests/Dockerfile
     environment:
       - RUN_TESTS=${RUN_TESTS}
     depends_on:
@@ -51,6 +56,9 @@ services:
 volumes:
   db-data:
     driver: local
+  db-data-test:
+    driver: local
+
 
 networks:
   avito-network:
