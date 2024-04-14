@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	host     = "192.168.56.1:8000"
+	host     = "localhost:8000" // 192.168.56.1
 	basePath = "http://" + host
 )
 
